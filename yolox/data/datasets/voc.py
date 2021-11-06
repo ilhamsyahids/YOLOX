@@ -8,6 +8,7 @@
 
 import cv2
 import numpy as np
+from loguru import logger
 
 from yolox.evaluators.voc_eval import voc_eval
 
@@ -173,10 +174,10 @@ class VOCDetection(Dataset):
             mAP = self._do_python_eval(output_dir, iou)
             mAPs.append(mAP)
 
-        print("--------------------------------------------------------------")
-        print("map_5095:", np.mean(mAPs))
-        print("map_50:", mAPs[0])
-        print("--------------------------------------------------------------")
+        logger.info("--------------------------------------------------------------")
+        logger.info("map_5095: {}".format(np.mean(mAPs)))
+        logger.info("map_50: {}".format(mAPs[0]))
+        logger.info("--------------------------------------------------------------")
         return np.mean(mAPs), mAPs[0]
 
     def _get_voc_results_file_template(self):
@@ -225,7 +226,7 @@ class VOCDetection(Dataset):
         aps = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
-        print("Eval IoU : {:.2f}".format(iou))
+        logger.info("Eval IoU : {:.2f}".format(iou))
         if output_dir is not None and not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         for i, cls in enumerate(VOC_CLASSES):
@@ -245,17 +246,18 @@ class VOCDetection(Dataset):
             )
             aps += [ap]
             if iou == 0.5:
-                print("AP for {} = {:.4f}".format(cls, ap))
+                logger.info("AP for {} = {:.4f}".format(cls, ap))
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + "_pr.pkl"), "wb") as f:
                     pickle.dump({"rec": rec, "prec": prec, "ap": ap}, f)
         if iou == 0.5:
-            print("Mean AP = {:.4f}".format(np.mean(aps)))
-            print("~~~~~~~~")
-            print("Results:")
+            logger.info("Mean AP = {:.4f}".format(np.mean(aps)))
+            logger.info("~~~~~~~~")
+            logger.info("~~~~~~~~")
+            logger.info("Results:")
             for ap in aps:
-                print("{:.3f}".format(ap))
-            print("{:.3f}".format(np.mean(aps)))
+                logger.info("{:.3f}".format(ap))
+            logger.info("{:.3f}".format(np.mean(aps)))
             print("~~~~~~~~")
             print("")
             print("--------------------------------------------------------------")
